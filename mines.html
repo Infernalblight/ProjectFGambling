@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>Mines</title>
+<style>
+body{margin:0;font-family:Segoe UI;background:#0f1226;color:#fff;display:flex;flex-direction:column;align-items:center}
+.top{display:flex;gap:10px;padding:20px}
+input,button{padding:10px;border:none;border-radius:10px;font-weight:600}
+button{background:#2f36a5;color:#fff;cursor:pointer}
+.grid{display:grid;grid-template-columns:repeat(5,80px);gap:10px;margin-top:20px}
+.cell{width:80px;height:80px;background:#20245a;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:22px;cursor:pointer}
+</style>
+</head>
+<body>
+<div class="top">
+<input id="bet" type="number" value="10">
+<button onclick="start()">Start</button>
+<button onclick="cash()">Cashout</button>
+<button onclick="location.href='index.html'">Back</button>
+<div>Balance £<span id="bal"></span></div>
+</div>
+<div class="grid" id="grid"></div>
+<script>
+let mines=[]
+let opened=0
+let active=false
+let bet=0
+document.getElementById("bal").textContent=parseFloat(localStorage.balance).toFixed(2)
+function start(){
+bet=parseFloat(document.getElementById("bet").value)
+if(bet<=0||bet>parseFloat(localStorage.balance))return
+active=true
+opened=0
+mines=[]
+while(mines.length<5){
+let r=Math.floor(Math.random()*25)
+if(!mines.includes(r))mines.push(r)
+}
+let g=document.getElementById("grid")
+g.innerHTML=""
+for(let i=0;i<25;i++){
+let d=document.createElement("div")
+d.className="cell"
+d.onclick=()=>clickCell(i,d)
+g.appendChild(d)
+}
+}
+function clickCell(i,d){
+if(!active||d.textContent)return
+if(mines.includes(i)){
+d.textContent="💣"
+lose()
+}else{
+d.textContent="💎"
+opened++
+}
+}
+function cash(){
+if(!active)return
+let win=bet*(1+opened*0.25)
+finish("WIN",win)
+}
+function lose(){
+finish("LOSE",-bet)
+}
+function finish(type,amount){
+active=false
+let bal=parseFloat(localStorage.balance)+amount
+localStorage.balance=bal
+let h=JSON.parse(localStorage.history)
+h.push({game:"Mines",result:type,amount:amount.toFixed(2),balance:bal})
+localStorage.history=JSON.stringify(h)
+document.getElementById("bal").textContent=bal.toFixed(2)
+}
+</script>
+</body>
+</html>
