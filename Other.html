@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Letter Rush</title>
+<style>
+body{
+margin:0;
+font-family:Segoe UI,Arial;
+background:#0f0f14;
+color:#fff;
+display:flex;
+flex-direction:column;
+align-items:center;
+padding:20px
+}
+h1{margin:10px 0}
+#letter{
+font-size:60px;
+font-weight:700;
+margin:10px;
+color:#6cf
+}
+.container{
+width:100%;
+max-width:500px
+}
+.category{
+margin:15px 0
+}
+.category h3{margin:5px 0}
+input{
+width:100%;
+padding:10px;
+border:none;
+border-radius:8px;
+background:#1c1c26;
+color:#fff;
+font-size:16px
+}
+button{
+width:100%;
+padding:12px;
+border:none;
+border-radius:10px;
+background:#6cf;
+color:#000;
+font-weight:700;
+margin-top:10px;
+font-size:16px
+}
+#timer{
+font-size:30px;
+margin:10px
+}
+#result{
+margin-top:15px;
+font-size:18px;
+text-align:center
+}
+.toggle{
+display:flex;
+align-items:center;
+gap:10px;
+margin-top:10px
+}
+</style>
+</head>
+<body>
+
+<h1>Letter Rush</h1>
+<div id="letter">?</div>
+<div id="timer">01:30</div>
+
+<div class="toggle">
+<label>Danish Mode</label>
+<input type="checkbox" id="danish">
+</div>
+
+<div class="container">
+
+<div class="category">
+<h3>Countries</h3>
+<input id="countries" placeholder="Comma separated">
+</div>
+
+<div class="category">
+<h3>Brands</h3>
+<input id="brands" placeholder="Comma separated">
+</div>
+
+<div class="category">
+<h3>Food</h3>
+<input id="food" placeholder="Comma separated">
+</div>
+
+<div class="category">
+<h3>Animals</h3>
+<input id="animals" placeholder="Comma separated">
+</div>
+
+<button onclick="startGame()">Start</button>
+<button onclick="finish()">Finish</button>
+
+<div id="result"></div>
+
+</div>
+
+<script>
+const letters="ABCDEFGHIJKLMNOPQRSTUVWXYZÆØÅ";
+
+const dataEN={
+countries:["luxembourg","latvia","lithuania","laos","lebanon","lesotho","libya","liechtenstein"],
+brands:["lego","louis vuitton","lenovo","lacoste","lg","levis","loreal"],
+food:["lasagna","lobster","lettuce","lollipop","lentils","lemon"],
+animals:["lion","lemur","leopard","llama","lobster","ladybug"]
+};
+
+const dataDK={
+countries:["litauen","letland","libyen","lesotho","laos"],
+brands:["lego","louis vuitton","lenovo","lacoste","lg"],
+food:["leverpostej","lakrids","linser","laks","lime"],
+animals:["løve","lemur","leopard","lama","laks"]
+};
+
+let currentLetter="";
+let time=90;
+let interval;
+
+function randomLetter(){
+const pool=document.getElementById("danish").checked?letters:letters.slice(0,26);
+return pool[Math.floor(Math.random()*pool.length)];
+}
+
+function startGame(){
+currentLetter=randomLetter();
+document.getElementById("letter").textContent=currentLetter;
+time=90;
+updateTimer();
+clearInterval(interval);
+interval=setInterval(()=>{
+time--;
+updateTimer();
+if(time<=0) finish();
+},1000);
+}
+
+function updateTimer(){
+let m=Math.floor(time/60).toString().padStart(2,"0");
+let s=(time%60).toString().padStart(2,"0");
+document.getElementById("timer").textContent=m+":"+s;
+}
+
+function check(list,input){
+let correct=0;
+let wrong=0;
+input.forEach(v=>{
+if(!v) return;
+if(!v.toLowerCase().startsWith(currentLetter.toLowerCase())) return wrong++;
+if(list.includes(v.toLowerCase())) correct++;
+else wrong++;
+});
+return{correct,wrong};
+}
+
+function finish(){
+clearInterval(interval);
+const mode=document.getElementById("danish").checked?"DK":"EN";
+const db=mode==="DK"?dataDK:dataEN;
+
+const c=document.getElementById("countries").value.split(",").map(v=>v.trim());
+const b=document.getElementById("brands").value.split(",").map(v=>v.trim());
+const f=document.getElementById("food").value.split(",").map(v=>v.trim());
+const a=document.getElementById("animals").value.split(",").map(v=>v.trim());
+
+let resC=check(db.countries,c);
+let resB=check(db.brands,b);
+let resF=check(db.food,f);
+let resA=check(db.animals,a);
+
+let totalCorrect=resC.correct+resB.correct+resF.correct+resA.correct;
+let totalWrong=resC.wrong+resB.wrong+resF.wrong+resA.wrong;
+
+document.getElementById("result").innerHTML="Correct: "+totalCorrect+" | Wrong: "+totalWrong;
+}
+</script>
+
+</body>
+</html>
