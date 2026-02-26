@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>Fake Casino</title>
+<style>
+body{margin:0;font-family:Segoe UI;background:#0f1226;color:#fff;display:flex;height:100vh}
+.sidebar{width:260px;background:#171b3a;padding:20px;display:flex;flex-direction:column;gap:14px}
+.tab{padding:14px;border-radius:12px;background:#20245a;cursor:pointer;text-align:center;font-weight:600}
+.tab:hover{background:#2f36a5}
+.main{flex:1;padding:20px;overflow:auto}
+.card{background:#171b3a;padding:20px;border-radius:16px;margin-bottom:20px}
+.game{padding:20px;background:#20245a;border-radius:16px;cursor:pointer;margin-bottom:10px;text-align:center;font-weight:700}
+canvas{background:#0f1226;border-radius:12px}
+</style>
+</head>
+<body>
+<div class="sidebar">
+<div class="tab" onclick="show('games')">Games</div>
+<div class="tab" onclick="show('history')">History</div>
+<div class="tab">Balance: £<span id="bal">0</span></div>
+</div>
+<div class="main">
+<div id="games" class="card">
+<h2>Games</h2>
+<div class="game" onclick="location.href='mines.html'">Mine Field</div>
+</div>
+<div id="history" class="card" style="display:none">
+<h2>History</h2>
+<div id="hist"></div>
+<h2>Balance Graph</h2>
+<canvas id="chart" width="800" height="300"></canvas>
+</div>
+</div>
+<script>
+if(localStorage.balance==null)localStorage.balance=1000
+if(localStorage.history==null)localStorage.history="[]"
+document.getElementById("bal").textContent=parseFloat(localStorage.balance).toFixed(2)
+function show(x){
+document.getElementById("games").style.display="none"
+document.getElementById("history").style.display="none"
+document.getElementById(x).style.display="block"
+if(x==="history")loadHistory()
+}
+function loadHistory(){
+let h=JSON.parse(localStorage.history)
+let div=document.getElementById("hist")
+div.innerHTML=""
+h.forEach(v=>{
+let d=document.createElement("div")
+d.style.padding="10px"
+d.textContent=v.game+" | "+v.result+" | "+v.amount+" | £"+v.balance.toFixed(2)
+div.appendChild(d)
+})
+drawGraph()
+}
+function drawGraph(){
+let h=JSON.parse(localStorage.history)
+let c=document.getElementById("chart")
+let ctx=c.getContext("2d")
+ctx.clearRect(0,0,c.width,c.height)
+ctx.beginPath()
+ctx.moveTo(0,c.height)
+let step=c.width/(h.length+1)
+h.forEach((v,i)=>{
+let y=c.height-(v.balance/2000)*c.height
+ctx.lineTo((i+1)*step,y)
+})
+ctx.strokeStyle="#6af"
+ctx.lineWidth=3
+ctx.stroke()
+}
+</script>
+</body>
+</html>
